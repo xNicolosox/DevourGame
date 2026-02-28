@@ -116,6 +116,23 @@ void keyboard(unsigned char key, int, int)
             break;
         }
     }
+    // --- FASE CONCLUIDA ---
+if (state == GameState::FASE_CONCLUIDA) {
+        if (key == 13) { // 13 é o código para ENTER
+            componentesQueimados = 0;
+            componentesCarregados = 0;
+            
+            // Tenta carregar o mapa 2
+            if (gameInit("maps/map2.txt")) { 
+                gameSetState(GameState::JOGANDO);
+                printf("\n>>> BEM-VINDO A FASE 2. PREPARA-TE!\n");
+            } else {
+                printf("\n[ERRO] map2.txt nao encontrado na pasta maps/!\n");
+                gameSetState(GameState::MENU_INICIAL);
+            }
+        }
+        return;
+    }
 }
 
 void keyboardUp(unsigned char key, int, int)

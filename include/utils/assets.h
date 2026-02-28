@@ -26,6 +26,7 @@ struct GameAssets
     GLuint texDamage = 0;
     GLuint texGunHUD = 0;
     GLuint texHudFundo = 0;
+    GLuint texTelaWin = 0;
 
     GLuint texEnemies[5]       = {0, 0, 0, 0, 0};
     GLuint texEnemiesRage[5]   = {0, 0, 0, 0, 0};

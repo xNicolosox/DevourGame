@@ -70,7 +70,7 @@ bool gameInit(const char *mapPath)
     g.r.texTeto = gAssets.texTeto;
     g.r.texSkydome = gAssets.texSkydome;
     g.r.texMenuBG = gAssets.texMenuBG;
-
+    g.r.texTelaWin = gAssets.texTelaWin;
     gHudTex.texHudFundo = gAssets.texHudFundo;
     gHudTex.texGunHUD = gAssets.texGunHUD;
     gHudTex.texGunDefault = gAssets.texGunDefault;
@@ -134,10 +134,13 @@ void gameReset()
 void gameUpdate(float dt)
 {
     g.time += dt;
+
+    // Se não estiver jogando, não processa física nem IA
     if (g.state != GameState::JOGANDO) return;
 
     atualizaMovimento();
 
+    // Atualização de Áudio
     AudioListener L; L.pos = {camX, camY, camZ};
     float ry = yaw * 3.14159f / 180.0f; float rp = pitch * 3.14159f / 180.0f;
     L.forward = {cosf(rp) * sinf(ry), sinf(rp), -cosf(rp) * cosf(ry)};
@@ -146,6 +149,7 @@ void gameUpdate(float dt)
     bool moving = (keyW || keyA || keyS || keyD);
     audioUpdate(gAudioSys, gLevel, L, dt, moving, g.player.health);
 
+    // Efeitos de flash de dano/cura
     if (g.player.damageAlpha > 0.0f) {
         g.player.damageAlpha -= dt * 0.5f;
         if (g.player.damageAlpha < 0.0f) g.player.damageAlpha = 0.0f;
@@ -155,8 +159,16 @@ void gameUpdate(float dt)
         if (g.player.healthAlpha < 0.0f) g.player.healthAlpha = 0.0f;
     }
 
+    // --- ATUALIZA MONSTROS E ITENS (Apenas uma vez!) ---
     updateEntities(dt);
 
+    // --- CHECAGEM DE VITÓRIA (Pegou os 10) ---
+    if (componentesQueimados >= 10) {
+        g.state = GameState::FASE_CONCLUIDA;
+        glutSetCursor(GLUT_CURSOR_LEFT_ARROW); // Ou GLUT_CURSOR_INFO
+    }
+
+    // --- CHECAGEM DE DERROTA (Morreu) ---
     if (g.player.health <= 0) {
         g.state = GameState::GAME_OVER;
         g.player.damageAlpha = 1.0f;
@@ -203,6 +215,21 @@ void gameRender()
         drawWorld3D();
         hudRenderAll(janelaW, janelaH, gHudTex, hs, true, false, true, componentesQueimados);
         pauseMenuRender(janelaW, janelaH, g.time);
+    }else if (g.state == GameState::FASE_CONCLUIDA) {
+        drawWorld3D(); // Desenha o jogo parado ao fundo
+        
+        // --- O TRUQUE MÁGICO ---
+        // Salva a imagem original do menu
+        GLuint fundoOriginal = g.r.texMenuBG; 
+        
+        // Coloca a imagem de vitória no lugar
+        g.r.texMenuBG = g.r.texTelaWin; 
+
+        // Chama o menu (agora ele vai desenhar a telaWin no fundo!)
+        menuRender(janelaW, janelaH, g.time, "", "Pressione ENTER para ir para a Fase 2", g.r);
+        
+        // Devolve a imagem original para não bugar o Menu Inicial depois
+        g.r.texMenuBG = fundoOriginal; 
     }
     else { // JOGANDO
         drawWorld3D();

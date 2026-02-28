@@ -6,6 +6,7 @@
 bool loadAssets(GameAssets &a)
 {
     a.texMenuBG = carregaTextura("assets/menu_bg.png");
+    a.texTelaWin = carregaTextura("assets/telaWin.png");
 
     a.texChao = carregaTextura("assets/181.png");
     a.texParede = carregaTextura("assets/091.png");
