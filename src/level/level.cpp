@@ -2,6 +2,8 @@
 #include "core/config.h" 
 #include <cstdio>
 
+extern int faseAtual; // Puxa a informação da fase atual definida no game.cpp
+
 // Configurações básicas para spawn
 static const float ENEMY_START_HP = 100.0f;
 
@@ -32,13 +34,18 @@ bool loadLevel(Level &lvl, const char *mapPath, float tileSize)
             float wx, wz;
             lvl.metrics.tileCenter(x, z, wx, wz);
 
-            // --- LÓGICA DE SPAWN (Apenas Bosses e HDs) ---
-            int enemyType = -1; // -1 significa "não é entidade"
+            // --- LÓGICA DE SPAWN (Ajustada para progressão de fases) ---
+            int enemyType = -1; 
 
-            if (c == 'J') enemyType = 0;      // Boss 1: Júlio
-            else if (c == 'T') enemyType = 1; // Boss 2: Thiago 
-            else if (c == 'M') enemyType = 2; // Boss 3: Marco Leal 
-            else if (c == 'G') enemyType = 3; // (Espaço para monstro extra)
+            // Se encontrar qualquer marcador de Boss no .txt
+            if (c == 'J' || c == 'T' || c == 'M') 
+            {
+                // Força o boss específico da fase atual
+                if (faseAtual == 1)      enemyType = 2; // Fase 1: Marco Leal (M)
+                else if (faseAtual == 2) enemyType = 1; // Fase 2: Thiago (T)
+                else                     enemyType = 0; // Fase 3+: Júlio (J)
+            }
+            else if (c == 'G') enemyType = 3; // Monstro extra
             else if (c == 'H') enemyType = 4; // Item Coletável: HD
 
             if (enemyType != -1) 
@@ -54,7 +61,7 @@ bool loadLevel(Level &lvl, const char *mapPath, float tileSize)
                 e.startZ = wz;
                 e.respawnTimer = 0.0f;
 
-                e.hp = ENEMY_START_HP; // Bosses podem ter HP, mesmo que a gente não use
+                e.hp = ENEMY_START_HP; 
                 e.state = STATE_IDLE;
                 e.animFrame = 0;
                 e.animTimer = 0;
@@ -63,7 +70,6 @@ bool loadLevel(Level &lvl, const char *mapPath, float tileSize)
 
                 lvl.enemies.push_back(e);
             }
-   
         }
     }
 

@@ -76,6 +76,7 @@ bool gameInit(const char *mapPath)
     // HUD de Terror (Overlay de dano e cura)
     gHudTex.texDamage = gAssets.texDamage;
     gHudTex.texHealthOverlay = gAssets.texHealthOverlay;
+    gHudTex.texHD = gAssets.texEnemies[4];
 
     for (int i = 0; i < 5; i++) {
         g.r.texEnemies[i] = gAssets.texEnemies[i];
@@ -110,6 +111,16 @@ bool gameInit(const char *mapPath)
 
 void gameReset()
 {
+    // Se a função foi chamada com 10 HDs queimados, é porque você GANHOU a fase!
+    if (componentesQueimados >= 10) {
+        if (faseAtual >= 3) faseAtual = 1; // Zerou o jogo? Recomeça a tortura
+        else faseAtual++; // Sobe de fase!
+    } else {
+        // Se morreu no meio (Game Over) ou recomeçou do Menu, volta pra Fase 1
+        faseAtual = 1; 
+    }
+
+    // --- 2. RESETA O JOGADOR ---
     g.player.health = 100;
     g.player.damageAlpha = 0.0f;
     g.player.healthAlpha = 0.0f;
@@ -117,7 +128,24 @@ void gameReset()
     componentesCarregados = 0;
     componentesQueimados = 0;
 
-    applySpawn(gLevel, camX, camZ);
+    applySpawn(gLevel, camX, camZ); // Volta o player pro lugar de início
+
+    // --- 3. RESETA O MAPA (Revive HDs e Troca o Boss) ---
+    for (auto &en : gLevel.enemies) {
+        // Devolve TODO MUNDO para a posição original que estava no mapa
+        en.x = en.startX;
+        en.z = en.startZ;
+        en.state = STATE_IDLE; // Revive os HDs que tinham sumido
+        en.attackCooldown = 0.0f;
+        en.hurtTimer = 0.0f;
+
+        // Se for um Boss (Tipos 0, 1 ou 2), muda a skin dele para a fase atual!
+        if (en.type == 0 || en.type == 1 || en.type == 2) {
+            if (faseAtual == 1) en.type = 2;      // Fase 1: Marco Leal
+            else if (faseAtual == 2) en.type = 1; // Fase 2: Thiago
+            else if (faseAtual >= 3) en.type = 0; // Fase 3: Júlio
+        }
+    }
 }
 
 void gameUpdate(float dt)
@@ -190,6 +218,7 @@ void gameRender()
     hs.playerHealth = (int)g.player.health;
     hs.damageAlpha = g.player.damageAlpha;
     hs.healthAlpha = g.player.healthAlpha;
+    hs.componentesCarregados = componentesCarregados;
 
     if (g.state == GameState::MENU_INICIAL) {
         menuRender(janelaW, janelaH, g.time, "", "Pressione ENTER para Sobreviver", g.r);

@@ -3,7 +3,6 @@
 bool isWalkable(float x, float z);
 void updateEntities(float dt);
 
-// Configurações da IA (Focado apenas na velocidade do Boss)
 const float ENEMY_SPEED = 2.5f;
 
 enum EnemyState
@@ -11,25 +10,28 @@ enum EnemyState
     STATE_IDLE,
     STATE_CHASE,
     STATE_ATTACK,
-    STATE_DEAD // Usado quando o boss "morre" ou quando o HD é coletado
+    STATE_DEAD 
 };
 
 struct Enemy
 {
-    int type;         // 0=Júlio, 1=Thiago, 2=Marco Leal, 4=HD
-    float x, z;       // Posição no mundo
-    float hp;         // Vida (mantido caso queira usar futuramente)
-    EnemyState state; // Estado atual (IA)
+    int type;         
+    float x, z;       
+    float hp;         
+    EnemyState state; 
     
     float startX, startZ;
     float respawnTimer;
     
-    // Animação (Para quando você colocar sprites andando)
+    // Animação e Patrulha
     int animFrame;
-    float animTimer;
+    float animTimer;  // Usaremos este timer para decidir quanto tempo ele anda numa direção
 
-    // Combate / Dano
-    float attackCooldown; // Tempo entre um ataque e outro do Boss
-    float hurtTimer;      // Tempo de piscar vermelho
+    // --- ADICIONE ESTAS LINHAS ---
+    float dirX;       // Direção X da patrulha
+    float dirZ;       // Direção Z da patrulha
+    // ----------------------------
+
+    float attackCooldown; 
+    float hurtTimer;      
 };
-

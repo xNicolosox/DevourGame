@@ -17,6 +17,7 @@ struct HudTextures
 
     GLuint texDamage = 0;
     GLuint texHealthOverlay = 0;
+    GLuint texHD = 0;
 };
 
 struct HudState
@@ -25,6 +26,7 @@ struct HudState
 
     float damageAlpha = 0.0f;
     float healthAlpha = 0.0f;
+    int componentesCarregados = 0;
 
 };
 

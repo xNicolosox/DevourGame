@@ -86,6 +86,48 @@ static void drawHealthOverlay(int w, int h, GLuint texHealth, float alpha)
     end2D();
 }
 
+// Coloquei a função AQUI EM CIMA para o hudRenderAll poder enxergar ela
+static void drawHDIcon(int w, int h, GLuint texHD, int carregados)
+{
+    // Só desenha se tiver carregando 1 HD e a textura existir
+    if (carregados <= 0 || texHD == 0) return;
+
+    begin2D(w, h);
+
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_2D);
+    
+    // Permite transparência na imagem do HD
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.1f);
+
+    // Força o OpenGL a usar a textura correta
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texHD);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+    // --- CORREÇÃO DE POSIÇÃO ---
+    float size = h * 0.15f; 
+    float x = (float)w - size - 240.0f; // Mais para a esquerda
+    float y = 230.0f;                   // Mais para cima
+
+    glBegin(GL_QUADS);
+    glTexCoord2f(0, 1); glVertex2f(x, y);
+    glTexCoord2f(1, 1); glVertex2f(x + size, y);
+    glTexCoord2f(1, 0); glVertex2f(x + size, y + size);
+    glTexCoord2f(0, 0); glVertex2f(x, y + size);
+    glEnd();
+
+    glDisable(GL_ALPHA_TEST);
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+
+    end2D();
+}
+
 void hudRenderAll(
     int screenW,
     int screenH,
@@ -100,6 +142,9 @@ void hudRenderAll(
     drawDevourCounter(screenW, screenH, queimados);
     drawDamageOverlay(screenW, screenH, tex.texDamage, state.damageAlpha);
     drawHealthOverlay(screenW, screenH, tex.texHealthOverlay, state.healthAlpha);
+    
+    // AQUI ESTAVA O ERRO! Faltou chamar a função pra desenhar o ícone!
+    drawHDIcon(screenW, screenH, tex.texHD, state.componentesCarregados);
 }
 
 void drawDevourCounter(int w, int h, int queimados)
@@ -117,7 +162,8 @@ void drawDevourCounter(int w, int h, int queimados)
     // Escala do texto
     float scale = 0.00025f * h; 
 
-    float x = (float)w - 650.0f; // Ajuste para caber o texto novo 
+    // Posição: Superior Direito (puxado 900px pra esquerda pra não cortar)
+    float x = (float)w - 900.0f; 
     float y = (float)h - 50.0f;
 
     // Fica vermelho quando só falta 1!

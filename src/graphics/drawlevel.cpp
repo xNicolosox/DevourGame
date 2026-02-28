@@ -208,8 +208,18 @@ static void desenhaParedePorFace(float x, float z, GLuint texParedeX, int f)
 {
     float half = TILE * 0.5f;
 
-    glUseProgram(0);
+    // --- CORREÇÃO: Liga a lanterna na parede em vez de glUseProgram(0) ---
+    if (shaderLanterna) {
+        shaderLanterna->use();
+        shaderLanterna->setInt("uTexture", 0);
+        shaderLanterna->setInt("uFlashlightOn", flashlightOn ? 1 : 0);
+    } else {
+        glUseProgram(0);
+    }
+
     glColor3f(1, 1, 1);
+    
+    glActiveTexture(GL_TEXTURE0); // Garante que a textura certa vai pro shader
     glBindTexture(GL_TEXTURE_2D, texParedeX);
 
     float tilesX = 1.0f;
@@ -461,6 +471,30 @@ void drawLevel(const MapLoader &map, float px, float pz, float dx, float dz, con
             {
                 desenhaTileSangue(wx, wz, r, time);
             }
+            else if (c == '9')
+            {
+                // 1. Desenha o chão de Lava animado (que já existe no seu motor)
+                desenhaTileLava(wx, wz, r, time);
+
+                // 2. Prepara o shader da lanterna para desenhar o teto corretamente
+                if (shaderLanterna) {
+                    shaderLanterna->use();
+                    shaderLanterna->setInt("uTexture", 0);
+                    shaderLanterna->setInt("uFlashlightOn", flashlightOn ? 1 : 0);
+                } else {
+                    glUseProgram(0);
+                }
+
+                // 3. Desenha o Teto em cima do Incinerador
+                glColor3f(1, 1, 1);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, r.texTeto); // Usa a textura texTeto que adicionamos antes
+                
+                desenhaQuadTeto(wx, wz, TILE, 2.0f);
+
+                // Desliga o shader para não bugar o próximo tile
+                glUseProgram(0);
+            }
         }
     }
 }
@@ -509,16 +543,22 @@ static void drawSprite(float x, float z, float w, float h, GLuint tex, float cam
 // Desenha inimigos e itens
 void drawEntities(const std::vector<Enemy> &enemies, float camX, float camZ, float dx, float dz, const RenderAssets &r)
 {
-    glDisable(GL_LIGHTING);
+    // AQUI ESTAVA O BUG: Removi o glDisable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.1f);
 
+    // --- CORREÇÃO: Aplica a lanterna nos HDs e Monstros ---
+    if (shaderLanterna) {
+        shaderLanterna->use();
+        shaderLanterna->setInt("uTexture", 0);
+        shaderLanterna->setInt("uFlashlightOn", flashlightOn ? 1 : 0);
+    }
+
     float fwdx, fwdz;
     bool hasFwd = getForwardXZ(dx, dz, fwdx, fwdz);
-
 
     // --- INIMIGOS E HDs ---
     for (const auto &en : enemies)
@@ -540,18 +580,20 @@ void drawEntities(const std::vector<Enemy> &enemies, float camX, float camZ, flo
             currentTex = r.texEnemies[t];
 
         // --- CONTROLE DE TAMANHO ---
-        float spriteW = 2.5f; // Largura padrão dos Bosses
-        float spriteH = 2.5f; // Altura padrão dos Bosses
+        float spriteW = 2.5f; 
+        float spriteH = 2.5f; 
 
         if (en.type == 4) {   // Se for o HD
-            spriteW = 0.5f;   // Deixa com 50cm de largura
-            spriteH = 0.5f;   // Deixa com 50cm de altura
+            spriteW = 0.5f;   
+            spriteH = 0.5f;   
         }
 
-        // Desenha usando as variáveis de tamanho
+        // --- Segurança para o shader ler a textura certa ---
+        glActiveTexture(GL_TEXTURE0); 
         drawSprite(en.x, en.z, spriteW, spriteH, currentTex, camX, camZ);
     }
 
-    glEnable(GL_LIGHTING);
+    // Desliga o shader e restaura estados no final
+    glUseProgram(0);
     glDisable(GL_ALPHA_TEST);
 }
