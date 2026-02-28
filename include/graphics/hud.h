@@ -38,4 +38,5 @@ void hudRenderAll(
     const HudState& state,
     bool showCrosshair,
     bool showWeapon,
-    bool showDoomBar);
+    bool showDoomBar,
+    int queimados);

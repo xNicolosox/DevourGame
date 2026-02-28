@@ -26,11 +26,17 @@ bool MapLoader::load(const char* filename) {
             continue;
 
         // detecta spawn '9'
+   // detecta spawn e objetos especiais
         for (int x = 0; x < (int)line.size(); x++) {
-            if (line[x] == '9') {
+            // Se achar 'P', define como spawn do jogador e vira chão '3'
+            if (line[x] == 'P' || line[x] == 'S') {
                 playerStartX = (float)x;
                 playerStartZ = (float)height;
-                line[x] = '0';
+                line[x] = '3'; // Vira chão de interior para você poder andar
+            }
+            // Se achar '9', NÃO APAGA. Deixa ele lá para o input.cpp encontrar
+            else if (line[x] == '9') {
+                // Apenas deixa o '9' no mapa, não faz nada com o spawn
             }
         }
 

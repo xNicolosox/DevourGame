@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdlib>
 
+void drawDevourCounter(int w, int h, int queimados);
 static void begin2D(int w, int h)
 {
     glMatrixMode(GL_PROJECTION);
@@ -295,14 +296,51 @@ void hudRenderAll(
     const HudState& state,
     bool showCrosshair,
     bool showWeapon,
-    bool showDoomBar)
+    bool showDoomBar,
+    int queimados)
 {
     // Ordem: arma -> barra -> mira -> overlays
     if (showWeapon)  drawWeaponHUD(screenW, screenH, tex, state.weaponState);
     if (showDoomBar) drawDoomBar(screenW, screenH, tex, state);
 
+    drawDevourCounter(screenW, screenH, queimados);
+
     if (showCrosshair) drawCrosshair(screenW, screenH);
 
     drawDamageOverlay(screenW, screenH, tex.texDamage, state.damageAlpha);
     drawHealthOverlay(screenW, screenH, tex.texHealthOverlay, state.healthAlpha);
+}
+
+
+void drawDevourCounter(int w, int h, int queimados)
+{
+    glPushAttrib(GL_ENABLE_BIT);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+
+    begin2D(w, h);
+
+    // Cor do texto (Branco)
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    int restantes = 10 - queimados;
+    std::string texto = "ITENS RESTANTES: " + std::to_string(restantes);
+
+    // Escala do texto
+    float scale = 0.00025f * h; 
+
+    // --- AJUSTE DE POSIÇÃO ---
+    // Em vez de w * 0.72f, vamos usar o tamanho da largura (w) 
+    // e subtrair um valor fixo para ele "colar" na direita.
+    // 350 pixels costuma ser o suficiente para o texto caber.
+    float x = (float)w - 600.0f; 
+    float y = (float)h - 50.0f;
+
+    if (restantes <= 1) glColor3f(1.0f, 0.0f, 0.0f);
+
+    uiDrawStrokeText(x, y, (char*)texto.c_str(), scale);
+
+    end2D();
+    glPopAttrib();
 }

@@ -2,11 +2,19 @@
 #include <GL/glut.h>
 #include <cmath>
 #include <cstdlib>
+#include <cstdio> // Para o printf
+
 #include "input/input.h"
 #include "input/keystate.h"
 #include "core/window.h"
 #include "graphics/menu.h"
-#include "core/game.h" // Adicione isso no topo
+#include "core/game.h" 
+#include "core/camera.h" // Necessário para saber a posição do jogador
+#include "level/level.h" // Necessário para ler o mapa
+
+// --- VARIÁVEIS EXTERNAS DO DEVOUR ---
+extern int componentesCarregados;
+extern int componentesQueimados;
 
 void keyboard(unsigned char key, int, int)
 {
@@ -57,34 +65,54 @@ void keyboard(unsigned char key, int, int)
             return;
         }
 
-        // Controles de Jogo (WASD + R + F)
+        // Controles de Jogo (WASD + F + E)
         switch (key)
         {
-        case 'w':
-        case 'W':
-            keyW = true;
-            break;
-        case 's':
-        case 'S':
-            keyS = true;
-            break;
-        case 'a':
-        case 'A':
-            keyA = true;
-            break;
-        case 'd':
-        case 'D':
-            keyD = true;
-            break;
-        case 'r':
-        case 'R':
-            playerTryReload(); // Podemos remover isso depois se não tiver mais arma
-            break;
+        case 'w': case 'W': keyW = true; break;
+        case 's': case 'S': keyS = true; break;
+        case 'a': case 'A': keyA = true; break;
+        case 'd': case 'D': keyD = true; break;
             
-        // --- LANTERNA AQUI ---
+        // --- LANTERNA ---
         case 'f':
         case 'F':
-            flashlightOn = !flashlightOn; // Inverte: se tava ligada, desliga. Se tava desligada, liga.
+            flashlightOn = !flashlightOn; // Liga/Desliga a lanterna
+            break;
+
+        // --- QUEIMAR NO INCINERADOR (TECLA E) ---
+        case 'e':
+        case 'E':
+            if (componentesCarregados > 0) {
+                Level& lvl = gameLevel();
+                float tile = lvl.metrics.tile;
+                float offX = lvl.metrics.offsetX;
+                float offZ = lvl.metrics.offsetZ;
+                
+                bool pertoDoIncinerador = false;
+
+                // Varre os blocos ao redor do jogador para ver se tem um '9'
+                int pX = (int)((camX - offX) / tile);
+                int pZ = (int)((camZ - offZ) / tile);
+
+                for (int bz = pZ - 1; bz <= pZ + 1; bz++) {
+                    for (int bx = pX - 1; bx <= pX + 1; bx++) {
+                        if (bz >= 0 && bz < lvl.map.getHeight() && bx >= 0 && bx < (int)lvl.map.data()[bz].size()) {
+                            if (lvl.map.data()[bz][bx] == '9') {
+                                pertoDoIncinerador = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (pertoDoIncinerador) {
+                    componentesCarregados = 0;
+                    componentesQueimados++;
+                    printf("\n>>> SUCESSO! Peça destruida! Total: %d/10\n", componentesQueimados);
+                } else {
+                    printf("\n>>> ERRO: Voce nao esta no Incinerador (Bloco 9)!\n");
+                }
+            }
             break;
         }
     }
@@ -94,22 +122,10 @@ void keyboardUp(unsigned char key, int, int)
 {
     switch (key)
     {
-    case 'w':
-    case 'W':
-        keyW = false;
-        break;
-    case 's':
-    case 'S':
-        keyS = false;
-        break;
-    case 'a':
-    case 'A':
-        keyA = false;
-        break;
-    case 'd':
-    case 'D':
-        keyD = false;
-        break;
+    case 'w': case 'W': keyW = false; break;
+    case 's': case 'S': keyS = false; break;
+    case 'a': case 'A': keyA = false; break;
+    case 'd': case 'D': keyD = false; break;
     }
 
     if ((key == 13 || key == '\r') && (glutGetModifiers() & GLUT_ACTIVE_ALT))
@@ -117,11 +133,8 @@ void keyboardUp(unsigned char key, int, int)
         altFullScreen();
     }
 }
+
 void mouseClick(int button, int state, int x, int y)
 {
-    // Se apertou o botão esquerdo
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-    {
-        playerTryAttack();
-    }
+    // Removido o ataque! Em jogos de terror a gente só corre.
 }
