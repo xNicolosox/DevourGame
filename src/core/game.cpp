@@ -27,6 +27,7 @@
 // --- VARIÁVEIS DO DEVOUR ---
 int componentesCarregados = 0;
 int componentesQueimados = 0;
+int faseAtual = 1;
 
 static HudTextures gHudTex;
 static GameContext g;
@@ -71,6 +72,7 @@ bool gameInit(const char *mapPath)
     g.r.texSkydome = gAssets.texSkydome;
     g.r.texMenuBG = gAssets.texMenuBG;
     g.r.texTelaWin = gAssets.texTelaWin;
+    g.r.texTelaFinal = gAssets.texTelaFinal;
     gHudTex.texHudFundo = gAssets.texHudFundo;
     gHudTex.texGunHUD = gAssets.texGunHUD;
     gHudTex.texGunDefault = gAssets.texGunDefault;
@@ -163,11 +165,17 @@ void gameUpdate(float dt)
     updateEntities(dt);
 
     // --- CHECAGEM DE VITÓRIA (Pegou os 10) ---
+   // --- CHECAGEM DE VITÓRIA (Pegou os 10) ---
     if (componentesQueimados >= 10) {
-        g.state = GameState::FASE_CONCLUIDA;
-        glutSetCursor(GLUT_CURSOR_LEFT_ARROW); // Ou GLUT_CURSOR_INFO
+        if (faseAtual >= 3) {
+            // Se for a última fase, vai direto pra tela final!
+            g.state = GameState::JOGO_ZERADO;
+        } else {
+            // Se não, vai pra tela de transição normal
+            g.state = GameState::FASE_CONCLUIDA;
+        }
+        glutSetCursor(GLUT_CURSOR_LEFT_ARROW); // Mostra o mouse
     }
-
     // --- CHECAGEM DE DERROTA (Morreu) ---
     if (g.player.health <= 0) {
         g.state = GameState::GAME_OVER;
@@ -215,7 +223,8 @@ void gameRender()
         drawWorld3D();
         hudRenderAll(janelaW, janelaH, gHudTex, hs, true, false, true, componentesQueimados);
         pauseMenuRender(janelaW, janelaH, g.time);
-    }else if (g.state == GameState::FASE_CONCLUIDA) {
+    }
+    else if (g.state == GameState::FASE_CONCLUIDA) {
         drawWorld3D(); // Desenha o jogo parado ao fundo
         
         // --- O TRUQUE MÁGICO ---
@@ -229,6 +238,16 @@ void gameRender()
         menuRender(janelaW, janelaH, g.time, "", "Pressione ENTER para ir para a Fase 2", g.r);
         
         // Devolve a imagem original para não bugar o Menu Inicial depois
+        g.r.texMenuBG = fundoOriginal; 
+    }
+    else if (g.state == GameState::JOGO_ZERADO) {
+        // Faz o mesmo truque mágico para usar a imagem telaFinal no fundo
+        GLuint fundoOriginal = g.r.texMenuBG; 
+        g.r.texMenuBG = g.r.texTelaFinal; 
+
+        // Mensagem épica de final de jogo
+        menuRender(janelaW, janelaH, g.time, "", "Pressione ENTER", g.r);
+        
         g.r.texMenuBG = fundoOriginal; 
     }
     else { // JOGANDO

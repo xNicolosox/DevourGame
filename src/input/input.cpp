@@ -11,10 +11,12 @@
 #include "core/game.h" 
 #include "core/camera.h" // Necessário para saber a posição do jogador
 #include "level/level.h" // Necessário para ler o mapa
+#include "core/config.h"
 
 // --- VARIÁVEIS EXTERNAS DO DEVOUR ---
 extern int componentesCarregados;
 extern int componentesQueimados;
+extern int faseAtual;
 
 void keyboard(unsigned char key, int, int)
 {
@@ -117,19 +119,49 @@ void keyboard(unsigned char key, int, int)
         }
     }
     // --- FASE CONCLUIDA ---
-if (state == GameState::FASE_CONCLUIDA) {
-        if (key == 13) { // 13 é o código para ENTER
-            componentesQueimados = 0;
-            componentesCarregados = 0;
+// --- FASE CONCLUIDA ---
+    if (state == GameState::FASE_CONCLUIDA) {
+        if (key == 13) { // ENTER
             
-            // Tenta carregar o mapa 2
-            if (gameInit("maps/map2.txt")) { 
+            // SE PASSOU DA FASE 3, VAI PARA A TELA FINAL!
+            if (faseAtual >= 3) {
+                gameSetState(GameState::JOGO_ZERADO);
+                return;
+            }
+
+            faseAtual++; 
+            char nomeMapa[64];
+            sprintf(nomeMapa, "maps/map%d.txt", faseAtual); 
+
+            // AQUI ESTAVA O BUG DO 2.0f! AGORA VAI LER O TAMANHO CORRETO DO MAPA:
+            if (loadLevel(gameLevel(), nomeMapa, GameConfig::TILE_SIZE)) { 
+                componentesQueimados = 0;
+                componentesCarregados = 0;
+                gameContext().player.health = 100; 
+                
+                applySpawn(gameLevel(), camX, camZ); 
                 gameSetState(GameState::JOGANDO);
-                printf("\n>>> BEM-VINDO A FASE 2. PREPARA-TE!\n");
             } else {
-                printf("\n[ERRO] map2.txt nao encontrado na pasta maps/!\n");
                 gameSetState(GameState::MENU_INICIAL);
             }
+        }
+        return;
+    }
+
+ // --- JOGO ZERADO (TELA FINAL) ---
+    if (state == GameState::JOGO_ZERADO) {
+        if (key == 13) { // Aperta ENTER para voltar ao Menu Principal
+            faseAtual = 1; 
+            componentesQueimados = 0;
+            componentesCarregados = 0;
+            gameContext().player.health = 100;
+
+            // Carrega o mapa 1 de volta para deixar o jogo pronto pra um novo "Play"
+            if (loadLevel(gameLevel(), "maps/map1.txt", GameConfig::TILE_SIZE)) {
+                applySpawn(gameLevel(), camX, camZ);
+            }
+
+            gameSetState(GameState::MENU_INICIAL);
         }
         return;
     }

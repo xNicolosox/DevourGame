@@ -6,7 +6,8 @@ enum class GameState
     JOGANDO,
     PAUSADO,
     GAME_OVER,
-    FASE_CONCLUIDA
+    FASE_CONCLUIDA,
+    JOGO_ZERADO
 };
 
 enum class WeaponState
