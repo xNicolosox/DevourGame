@@ -9,15 +9,9 @@ struct PlayerState
     float damageAlpha = 0.0f;
     float healthAlpha = 0.0f;
 
-    int currentAmmo = 12;
-    int reserveAmmo = 25;
 };
 
-struct WeaponAnim
-{
-    WeaponState state = WeaponState::W_IDLE;
-    float timer = 0.0f;
-};
+
 
 struct RenderAssets
 {
@@ -29,8 +23,7 @@ struct RenderAssets
     GLuint texEnemiesRage[5] = {0};
     GLuint texEnemiesDamage[5] = {0};
 
-    GLuint texHealth = 0;
-    GLuint texAmmo = 0;
+
 
     GLuint progSangue = 0;
     GLuint progLava = 0;
@@ -40,7 +33,6 @@ struct GameContext
 {
     GameState state = GameState::MENU_INICIAL;
     PlayerState player;
-    WeaponAnim weapon;
     float time = 0.0f;
 
     RenderAssets r;

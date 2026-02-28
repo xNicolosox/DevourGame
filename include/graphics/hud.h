@@ -22,13 +22,10 @@ struct HudTextures
 struct HudState
 {
     int playerHealth = 100;
-    int currentAmmo = 0;
-    int reserveAmmo = 0;
 
     float damageAlpha = 0.0f;
     float healthAlpha = 0.0f;
 
-    WeaponState weaponState = WeaponState::W_IDLE;
 };
 
 void hudRenderAll(

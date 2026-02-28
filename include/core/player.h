@@ -1,4 +1,2 @@
 #pragma once
-void playerTryReload();
-void playerTryAttack();
-void updateWeaponAnim(float dt);
+#include "core/game_state.h"

@@ -507,8 +507,7 @@ static void drawSprite(float x, float z, float w, float h, GLuint tex, float cam
 }
 
 // Desenha inimigos e itens
-void drawEntities(const std::vector<Enemy> &enemies, const std::vector<Item> &items,
-                  float camX, float camZ, float dx, float dz, const RenderAssets &r)
+void drawEntities(const std::vector<Enemy> &enemies, float camX, float camZ, float dx, float dz, const RenderAssets &r)
 {
     glDisable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
@@ -520,22 +519,8 @@ void drawEntities(const std::vector<Enemy> &enemies, const std::vector<Item> &it
     float fwdx, fwdz;
     bool hasFwd = getForwardXZ(dx, dz, fwdx, fwdz);
 
-    // --- ITENS ---
-    for (const auto &item : items)
-    {
-        if (!item.active)
-            continue;
 
-        if (!isVisibleXZ(item.x, item.z, camX, camZ, hasFwd, fwdx, fwdz))
-            continue;
-
-        if (item.type == ITEM_HEALTH)
-            drawSprite(item.x, item.z, 0.7f, 0.7f, r.texHealth, camX, camZ);
-        else if (item.type == ITEM_AMMO)
-            drawSprite(item.x, item.z, 0.7f, 0.7f, r.texAmmo, camX, camZ);
-    }
-
-    // --- INIMIGOS ---
+    // --- INIMIGOS E HDs ---
     for (const auto &en : enemies)
     {
         if (en.state == STATE_DEAD)
@@ -554,7 +539,17 @@ void drawEntities(const std::vector<Enemy> &enemies, const std::vector<Item> &it
         else
             currentTex = r.texEnemies[t];
 
-        drawSprite(en.x, en.z, 2.5f, 2.5f, currentTex, camX, camZ);
+        // --- CONTROLE DE TAMANHO ---
+        float spriteW = 2.5f; // Largura padrão dos Bosses
+        float spriteH = 2.5f; // Altura padrão dos Bosses
+
+        if (en.type == 4) {   // Se for o HD
+            spriteW = 0.5f;   // Deixa com 50cm de largura
+            spriteH = 0.5f;   // Deixa com 50cm de altura
+        }
+
+        // Desenha usando as variáveis de tamanho
+        drawSprite(en.x, en.z, spriteW, spriteH, currentTex, camX, camZ);
     }
 
     glEnable(GL_LIGHTING);

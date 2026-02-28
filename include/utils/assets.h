@@ -3,8 +3,12 @@
 
 struct GameAssets
 {
-    // texturas
+    // --- Telas e Menus ---
     GLuint texMenuBG = 0;
+    GLuint texTelaWin = 0;
+    GLuint texTelaFinal = 0;
+
+    // --- Cenário ---
     GLuint texChao = 0;
     GLuint texParede = 0;
     GLuint texSangue = 0;
@@ -12,32 +16,20 @@ struct GameAssets
     GLuint texChaoInterno = 0;
     GLuint texParedeInterna = 0;
     GLuint texTeto = 0;
-    GLuint texEnemy = 0;
-    GLuint texEnemyRage = 0;    // Viu o player
-    GLuint texEnemyDamage = 0;  // Leva dano
-    GLuint texHealthOverlay = 0; // Tela de cura
-    GLuint texHealth = 0;
-    GLuint texAmmo = 0;
-    GLuint texGunDefault = 0;
-    GLuint texGunFire1 = 0;
-    GLuint texGunFire2 = 0;
-    GLuint texGunReload1 = 0;
-    GLuint texGunReload2 = 0;
-    GLuint texDamage = 0;
-    GLuint texGunHUD = 0;
-    GLuint texHudFundo = 0;
-    GLuint texTelaWin = 0;
-    GLuint texTelaFinal = 0;
+    GLuint texSkydome = 0;
 
+    // --- Efeitos de Tela (HUD Terror) ---
+    GLuint texHealthOverlay = 0; // Flash de cura/transição
+    GLuint texDamage = 0;        // Flash de dano (Boss te bateu)
+
+    // --- Entidades (Bosses e HDs) ---
     GLuint texEnemies[5]       = {0, 0, 0, 0, 0};
     GLuint texEnemiesRage[5]   = {0, 0, 0, 0, 0};
     GLuint texEnemiesDamage[5] = {0, 0, 0, 0, 0};
 
-    // shaders
+    // --- Shaders ---
     GLuint progSangue = 0;
     GLuint progLava = 0;
-
-    GLuint texSkydome = 0;
 };
 
 bool loadAssets(GameAssets &a);

@@ -23,7 +23,3 @@ bool gameInit(const char *mapPath);
 void gameUpdate(float dt);
 void gameRender();
 void gameReset();
-
-// Ações do player
-void playerTryAttack();
-void playerTryReload();

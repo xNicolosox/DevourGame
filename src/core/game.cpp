@@ -1,4 +1,4 @@
-#include <GL/glew.h> // GLEW SEMPRE PRIMEIRO
+#include <GL/glew.h> 
 #include <GL/glut.h>
 #include <cmath>
 #include <cstdio>
@@ -31,9 +31,6 @@ int faseAtual = 1;
 
 static HudTextures gHudTex;
 static GameContext g;
-
-constexpr int MAX_MAGAZINE = 12;
-
 static GameAssets gAssets;
 Level gLevel;
 static AudioSystem gAudioSys;
@@ -62,6 +59,7 @@ bool gameInit(const char *mapPath)
 
     if (!loadAssets(gAssets)) return false;
 
+    // Repassa assets para o renderizador
     g.r.texChao = gAssets.texChao;
     g.r.texParede = gAssets.texParede;
     g.r.texSangue = gAssets.texSangue;
@@ -70,16 +68,12 @@ bool gameInit(const char *mapPath)
     g.r.texParedeInterna = gAssets.texParedeInterna;
     g.r.texTeto = gAssets.texTeto;
     g.r.texSkydome = gAssets.texSkydome;
+    
     g.r.texMenuBG = gAssets.texMenuBG;
     g.r.texTelaWin = gAssets.texTelaWin;
     g.r.texTelaFinal = gAssets.texTelaFinal;
-    gHudTex.texHudFundo = gAssets.texHudFundo;
-    gHudTex.texGunHUD = gAssets.texGunHUD;
-    gHudTex.texGunDefault = gAssets.texGunDefault;
-    gHudTex.texGunFire1 = gAssets.texGunFire1;
-    gHudTex.texGunFire2 = gAssets.texGunFire2;
-    gHudTex.texGunReload1 = gAssets.texGunReload1;
-    gHudTex.texGunReload2 = gAssets.texGunReload2;
+    
+    // HUD de Terror (Overlay de dano e cura)
     gHudTex.texDamage = gAssets.texDamage;
     gHudTex.texHealthOverlay = gAssets.texHealthOverlay;
 
@@ -89,8 +83,6 @@ bool gameInit(const char *mapPath)
         g.r.texEnemiesDamage[i] = gAssets.texEnemiesDamage[i];
     }
 
-    g.r.texHealth = gAssets.texHealth;
-    g.r.texAmmo = gAssets.texAmmo;
     g.r.progSangue = gAssets.progSangue;
     g.r.progLava = gAssets.progLava;
 
@@ -109,7 +101,6 @@ bool gameInit(const char *mapPath)
     g.state = GameState::MENU_INICIAL;
     g.time = 0.0f;
     g.player = PlayerState{};
-    g.weapon = WeaponAnim{};
     
     componentesCarregados = 0;
     componentesQueimados = 0;
@@ -120,12 +111,8 @@ bool gameInit(const char *mapPath)
 void gameReset()
 {
     g.player.health = 100;
-    g.player.currentAmmo = 12;
-    g.player.reserveAmmo = 25;
     g.player.damageAlpha = 0.0f;
     g.player.healthAlpha = 0.0f;
-    g.weapon.state = WeaponState::W_IDLE;
-    g.weapon.timer = 0.0f;
 
     componentesCarregados = 0;
     componentesQueimados = 0;
@@ -137,12 +124,10 @@ void gameUpdate(float dt)
 {
     g.time += dt;
 
-    // Se não estiver jogando, não processa física nem IA
     if (g.state != GameState::JOGANDO) return;
 
     atualizaMovimento();
 
-    // Atualização de Áudio
     AudioListener L; L.pos = {camX, camY, camZ};
     float ry = yaw * 3.14159f / 180.0f; float rp = pitch * 3.14159f / 180.0f;
     L.forward = {cosf(rp) * sinf(ry), sinf(rp), -cosf(rp) * cosf(ry)};
@@ -151,7 +136,6 @@ void gameUpdate(float dt)
     bool moving = (keyW || keyA || keyS || keyD);
     audioUpdate(gAudioSys, gLevel, L, dt, moving, g.player.health);
 
-    // Efeitos de flash de dano/cura
     if (g.player.damageAlpha > 0.0f) {
         g.player.damageAlpha -= dt * 0.5f;
         if (g.player.damageAlpha < 0.0f) g.player.damageAlpha = 0.0f;
@@ -161,25 +145,21 @@ void gameUpdate(float dt)
         if (g.player.healthAlpha < 0.0f) g.player.healthAlpha = 0.0f;
     }
 
-    // --- ATUALIZA MONSTROS E ITENS (Apenas uma vez!) ---
     updateEntities(dt);
 
-    // --- CHECAGEM DE VITÓRIA (Pegou os 10) ---
-   // --- CHECAGEM DE VITÓRIA (Pegou os 10) ---
     if (componentesQueimados >= 10) {
         if (faseAtual >= 3) {
-            // Se for a última fase, vai direto pra tela final!
             g.state = GameState::JOGO_ZERADO;
         } else {
-            // Se não, vai pra tela de transição normal
             g.state = GameState::FASE_CONCLUIDA;
         }
-        glutSetCursor(GLUT_CURSOR_LEFT_ARROW); // Mostra o mouse
+        glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
     }
-    // --- CHECAGEM DE DERROTA (Morreu) ---
+    
     if (g.player.health <= 0) {
         g.state = GameState::GAME_OVER;
         g.player.damageAlpha = 1.0f;
+        glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
     }
 }
 
@@ -197,7 +177,9 @@ void drawWorld3D()
 
     setSunDirectionEachFrame();
     drawLevel(gLevel.map, camX, camZ, dirX, dirZ, g.r, g.time);
-    drawEntities(gLevel.enemies, gLevel.items, camX, camZ, dirX, dirZ, g.r);
+    
+    // CORRIGIDO: Agora chamamos sem o "gLevel.items"
+    drawEntities(gLevel.enemies, camX, camZ, dirX, dirZ, g.r);
 }
 
 void gameRender()
@@ -206,11 +188,8 @@ void gameRender()
 
     HudState hs;
     hs.playerHealth = (int)g.player.health;
-    hs.currentAmmo = g.player.currentAmmo;
-    hs.reserveAmmo = g.player.reserveAmmo;
     hs.damageAlpha = g.player.damageAlpha;
     hs.healthAlpha = g.player.healthAlpha;
-    hs.weaponState = g.weapon.state;
 
     if (g.state == GameState::MENU_INICIAL) {
         menuRender(janelaW, janelaH, g.time, "", "Pressione ENTER para Sobreviver", g.r);
@@ -221,42 +200,25 @@ void gameRender()
     }
     else if (g.state == GameState::PAUSADO) {
         drawWorld3D();
-        hudRenderAll(janelaW, janelaH, gHudTex, hs, true, false, true, componentesQueimados);
+        hudRenderAll(janelaW, janelaH, gHudTex, hs, false, false, true, componentesQueimados);
         pauseMenuRender(janelaW, janelaH, g.time);
     }
     else if (g.state == GameState::FASE_CONCLUIDA) {
-        drawWorld3D(); // Desenha o jogo parado ao fundo
-        
-        // --- O TRUQUE MÁGICO ---
-        // Salva a imagem original do menu
+        drawWorld3D(); 
         GLuint fundoOriginal = g.r.texMenuBG; 
-        
-        // Coloca a imagem de vitória no lugar
         g.r.texMenuBG = g.r.texTelaWin; 
-
-        // Chama o menu (agora ele vai desenhar a telaWin no fundo!)
         menuRender(janelaW, janelaH, g.time, "", "Pressione ENTER para ir para a Fase 2", g.r);
-        
-        // Devolve a imagem original para não bugar o Menu Inicial depois
         g.r.texMenuBG = fundoOriginal; 
     }
     else if (g.state == GameState::JOGO_ZERADO) {
-        // Faz o mesmo truque mágico para usar a imagem telaFinal no fundo
         GLuint fundoOriginal = g.r.texMenuBG; 
         g.r.texMenuBG = g.r.texTelaFinal; 
-
-        // Mensagem épica de final de jogo
         menuRender(janelaW, janelaH, g.time, "", "Pressione ENTER", g.r);
-        
         g.r.texMenuBG = fundoOriginal; 
     }
-    else { // JOGANDO
+    else { 
         drawWorld3D();
-        
-        // --- HUD LIGADO PARA MOSTRAR O CONTADOR ---
-        // Parâmetros: largura, altura, texturas, estado, mira, arma, barra, queimados
-        hudRenderAll(janelaW, janelaH, gHudTex, hs, true, false, true, componentesQueimados);
-        
+        hudRenderAll(janelaW, janelaH, gHudTex, hs, false, false, true, componentesQueimados);
         menuMeltRenderOverlay(janelaW, janelaH, g.time);
     }
     glutSwapBuffers();

@@ -18,19 +18,8 @@ bool loadLevel(Level &lvl, const char *mapPath, float tileSize)
     
     // Limpa entidades antigas se houver
     lvl.enemies.clear();
-    lvl.items.clear();
 
-    // 2. Escaneia o mapa procurando Entidades (E, H, etc)
-    // Precisamos acessar os dados brutos do MapLoader como referência mudável
-    // Para isso, vamos assumir que podemos modificar o mapData ou fazemos uma varredura
-    // Como o MapLoader::data() retorna const, vamos ter que ser criativos ou 
-    // alterar o MapLoader. Mas vamos fazer a logica de posicao aqui.
-    
-    // Nota: O ideal seria o MapLoader permitir edição, mas vamos iterar cópia
-    // Na verdade, o MapLoader guarda strings. Vamos trapacear um pouco:
-    // O MapLoader não expõe escrita. Então vamos ler, criar a entidade, e na hora
-    // de desenhar/colidir, tratamos E e H como chão (0).
-    
+    // 2. Escaneia o mapa procurando Bosses e o HD
     const auto& data = lvl.map.data();
     int H = lvl.map.getHeight();
 
@@ -43,58 +32,38 @@ bool loadLevel(Level &lvl, const char *mapPath, float tileSize)
             float wx, wz;
             lvl.metrics.tileCenter(x, z, wx, wz);
 
-            // --- ALTERAÇÃO AQUI: Lógica para múltiplos inimigos (E, F, G) ---
-            int enemyType = -1; // -1 significa "não é inimigo"
+            // --- LÓGICA DE SPAWN (Apenas Bosses e HDs) ---
+            int enemyType = -1; // -1 significa "não é entidade"
 
-            if (c == 'J') enemyType = 0;      // Inimigo Tipo 1
-            else if (c == 'T') enemyType = 1; // Inimigo Tipo 2 
-            else if (c == 'M') enemyType = 2; // Inimigo Tipo 3 
-            else if (c == 'G') enemyType = 3; // Inimigo Tipo 4
-            else if (c == 'K') enemyType = 4; // Inimigo Tipo 5
+            if (c == 'J') enemyType = 0;      // Boss 1: Júlio
+            else if (c == 'T') enemyType = 1; // Boss 2: Thiago 
+            else if (c == 'M') enemyType = 2; // Boss 3: Marco Leal 
+            else if (c == 'G') enemyType = 3; // (Espaço para monstro extra)
+            else if (c == 'H') enemyType = 4; // Item Coletável: HD
 
-            if (enemyType != -1) // Se achou qualquer um dos inimigos
+            if (enemyType != -1) 
             {
                 Enemy e;
-                e.type = enemyType; // <--- IMPORTANTE: Define qual a skin dele (0, 1 ou 2)
+                e.type = enemyType; 
 
                 e.x = wx;
                 e.z = wz;
 
-                // NOVO: Salva a posição inicial e zera timer
+                // Salva a posição inicial e zera timers
                 e.startX = wx; 
                 e.startZ = wz;
                 e.respawnTimer = 0.0f;
 
-                e.hp = ENEMY_START_HP;
+                e.hp = ENEMY_START_HP; // Bosses podem ter HP, mesmo que a gente não use
                 e.state = STATE_IDLE;
                 e.animFrame = 0;
                 e.animTimer = 0;
                 e.hurtTimer = 0.0f;
-                e.attackCooldown = 0.0f; // Garante que começa zerado
+                e.attackCooldown = 0.0f; 
 
                 lvl.enemies.push_back(e);
             }
-            // ----------------------------------------------------------------
-
-            else if (c == 'H') // Health Kit
-            {
-                Item i;
-                i.x = wx;
-                i.z = wz;
-                i.type = ITEM_HEALTH;
-                i.active = true;
-                i.respawnTimer = 0.0f;
-                lvl.items.push_back(i);
-            }
-             else if (c == 'A') // Ammo (Munição)
-            {
-                Item i;
-                i.x = wx;
-                i.z = wz;
-                i.type = ITEM_AMMO;
-                i.active = true;
-                lvl.items.push_back(i);
-            }
+   
         }
     }
 
