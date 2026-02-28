@@ -2,6 +2,8 @@
 #include <GL/glut.h>
 #include <cmath>
 #include "core/game_state.h"
+#include "graphics/ShaderObj.h"
+#include "input/input.h"
 #include "graphics/drawlevel.h"
 #include "level/levelmetrics.h"
 #include "utils/utils.h"
@@ -16,9 +18,10 @@ static const float TILE = 4.0f;      // tamanho do tile no mundo (ajuste)
 static const float CEILING_H = 4.0f; // altura do teto
 static const float WALL_H = 4.0f;    // altura da parede
 static const float EPS_Y = 0.001f;   // evita z-fighting
+static ShaderObj* shaderLanterna = nullptr;
 
-static const GLfloat kAmbientOutdoor[] = {0.45f, 0.30f, 0.25f, 1.0f}; // quente (seu atual)
-static const GLfloat kAmbientIndoor[] = {0.12f, 0.12f, 0.18f, 1.0f};  // frio/azulado
+static const GLfloat kAmbientOutdoor[] = {0.02f, 0.02f, 0.02f, 1.0f}; // Breu
+static const GLfloat kAmbientIndoor[] = {0.01f, 0.01f, 0.01f, 1.0f};  // Breu
 
 // ======================
 // CONFIG ÚNICA DO CULLING (XZ)
@@ -179,7 +182,13 @@ static void desenhaQuadChao(float x, float z, float tile, float tilesUV)
 
 static void desenhaTileChao(float x, float z, GLuint texChaoX, bool temTeto)
 {
-    glUseProgram(0);
+    if (shaderLanterna) {
+        shaderLanterna->use();
+        shaderLanterna->setInt("uTexture", 0);
+        shaderLanterna->setInt("uFlashlightOn", flashlightOn ? 1 : 0);
+    } else {
+        glUseProgram(0);
+    }
     glColor3f(1, 1, 1);
 
     glActiveTexture(GL_TEXTURE0);
@@ -366,6 +375,10 @@ static void drawFace(float wx, float wz, int face, char neighbor, GLuint texPare
 
 void drawLevel(const MapLoader &map, float px, float pz, float dx, float dz, const RenderAssets &r, float time)
 {
+    // CARREGA A LANTERNA NA PRIMEIRA VEZ
+    if (!shaderLanterna) {
+        shaderLanterna = new ShaderObj("shaders/flashlight.vert", "shaders/flashlight.frag");
+    }
     const auto &data = map.data();
     const int H = map.getHeight();
 

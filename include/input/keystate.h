@@ -9,3 +9,4 @@ extern bool keyD;
 // Mouse / warp
 extern bool ignoreWarp;
 extern bool firstMouse;
+extern bool flashlightOn;

@@ -188,8 +188,8 @@ void gameUpdate(float dt)
             g.player.healthAlpha = 0.0f;
     }
 
-    updateEntities(dt);
-    updateWeaponAnim(dt);
+    // updateEntities(dt);
+    // updateWeaponAnim(dt);
 
     // 3. CHECAGEM DE GAME OVER
     if (g.player.health <= 0)
@@ -222,7 +222,7 @@ void drawWorld3D()
     setSunDirectionEachFrame();
     drawSkydome(camX, camY, camZ, g.r);
     drawLevel(gLevel.map, camX, camZ, dirX, dirZ, g.r, g.time);
-    drawEntities(gLevel.enemies, gLevel.items, camX, camZ, dirX, dirZ, g.r);
+    // drawEntities(gLevel.enemies, gLevel.items, camX, camZ, dirX, dirZ, g.r);
 }
 
 // FUNÇÃO PRINCIPAL DE DESENHO (REFATORADA: usa menuRender / pauseMenuRender / hudRenderAll)
@@ -276,9 +276,9 @@ void gameRender()
         drawWorld3D();
 
         // 2) HUD completo
-        hudRenderAll(janelaW, janelaH, gHudTex, hs, true, true, true);
+        // hudRenderAll(janelaW, janelaH, gHudTex, hs, true, true, true);
 
-        menuMeltRenderOverlay(janelaW, janelaH, g.time);
+        // menuMeltRenderOverlay(janelaW, janelaH, g.time);
     }
 
     glutSwapBuffers();

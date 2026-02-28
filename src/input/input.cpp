@@ -20,7 +20,7 @@ void keyboard(unsigned char key, int, int)
     {
         if (key == 13)
         {
-            if (!menuMeltIsActive()) // evita recomeçar toda hora
+            if (!menuMeltIsActive()) 
                 menuMeltRequestStart();
         }
         return;
@@ -30,7 +30,7 @@ void keyboard(unsigned char key, int, int)
     if (state == GameState::GAME_OVER)
     {
         if (key == 13)
-        { // ENTER reinicia
+        { 
             gameReset();
             gameSetState(GameState::JOGANDO);
         }
@@ -53,12 +53,11 @@ void keyboard(unsigned char key, int, int)
         if (key == 'p' || key == 'P')
         {
             gameSetState(GameState::PAUSADO);
-            // Para o movimento ao pausar
             keyW = keyA = keyS = keyD = false;
             return;
         }
 
-        // Controles de Jogo (WASD + R)
+        // Controles de Jogo (WASD + R + F)
         switch (key)
         {
         case 'w':
@@ -79,7 +78,13 @@ void keyboard(unsigned char key, int, int)
             break;
         case 'r':
         case 'R':
-            playerTryReload();
+            playerTryReload(); // Podemos remover isso depois se não tiver mais arma
+            break;
+            
+        // --- LANTERNA AQUI ---
+        case 'f':
+        case 'F':
+            flashlightOn = !flashlightOn; // Inverte: se tava ligada, desliga. Se tava desligada, liga.
             break;
         }
     }

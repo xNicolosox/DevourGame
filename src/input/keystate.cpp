@@ -7,3 +7,5 @@ bool keyD = false;
 
 bool ignoreWarp = false;
 bool firstMouse = true;
+
+bool flashlightOn = true;
