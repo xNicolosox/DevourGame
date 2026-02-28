@@ -111,8 +111,8 @@ static void drawHDIcon(int w, int h, GLuint texHD, int carregados)
 
     // --- CORREÇÃO DE POSIÇÃO ---
     float size = h * 0.15f; 
-    float x = (float)w - size - 240.0f; // Mais para a esquerda
-    float y = 230.0f;                   // Mais para cima
+    float x = (float)w - size - 70.0f; // Mais para a esquerda
+    float y = 100.0f;                   // Mais para cima
 
     glBegin(GL_QUADS);
     glTexCoord2f(0, 1); glVertex2f(x, y);
@@ -163,7 +163,7 @@ void drawDevourCounter(int w, int h, int queimados)
     float scale = 0.00025f * h; 
 
     // Posição: Superior Direito (puxado 900px pra esquerda pra não cortar)
-    float x = (float)w - 900.0f; 
+    float x = (float)w - 660.0f; 
     float y = (float)h - 50.0f;
 
     // Fica vermelho quando só falta 1!

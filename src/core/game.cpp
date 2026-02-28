@@ -175,7 +175,7 @@ void gameUpdate(float dt)
 
     updateEntities(dt);
 
-    if (componentesQueimados >= 10) {
+    if (componentesQueimados >= 1) {
         if (faseAtual >= 3) {
             g.state = GameState::JOGO_ZERADO;
         } else {
@@ -221,7 +221,7 @@ void gameRender()
     hs.componentesCarregados = componentesCarregados;
 
     if (g.state == GameState::MENU_INICIAL) {
-        menuRender(janelaW, janelaH, g.time, "", "Pressione ENTER para Sobreviver", g.r);
+        menuRender(janelaW, janelaH, g.time, "", "", g.r);
     }
     else if (g.state == GameState::GAME_OVER) {
         drawWorld3D();
@@ -236,13 +236,13 @@ void gameRender()
         drawWorld3D(); 
         GLuint fundoOriginal = g.r.texMenuBG; 
         g.r.texMenuBG = g.r.texTelaWin; 
-        menuRender(janelaW, janelaH, g.time, "", "Pressione ENTER para ir para a Fase 2", g.r);
+        menuRender(janelaW, janelaH, g.time, "", "", g.r);
         g.r.texMenuBG = fundoOriginal; 
     }
     else if (g.state == GameState::JOGO_ZERADO) {
         GLuint fundoOriginal = g.r.texMenuBG; 
         g.r.texMenuBG = g.r.texTelaFinal; 
-        menuRender(janelaW, janelaH, g.time, "", "Pressione ENTER", g.r);
+        menuRender(janelaW, janelaH, g.time, "", "", g.r);
         g.r.texMenuBG = fundoOriginal; 
     }
     else { 
