@@ -26,7 +26,7 @@ static bool isWallTile(int tx, int tz)
     if (c == 'E' || c == 'H' || c == 'A')
         return false;
 
-    return (c == '1' || c == '2');
+    return (c == '1' || c == '2' || c == 'U' || c == 'I' || c == 'O' || c == 'Y');
 }
 
 static bool pointIntersectsTile(float px, float pz, int tx, int tz, const LevelMetrics &m, float radius)

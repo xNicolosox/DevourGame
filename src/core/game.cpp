@@ -68,6 +68,11 @@ bool gameInit(const char *mapPath)
     g.r.texParedeInterna = gAssets.texParedeInterna;
     g.r.texTeto = gAssets.texTeto;
     g.r.texSkydome = gAssets.texSkydome;
+    // No game.cpp, dentro do gameInit(), logo abaixo de g.r.texParede = gAssets.texParede:
+    g.r.texParede040 = gAssets.texParede040;
+    g.r.texParede043 = gAssets.texParede043;
+    g.r.texParede044 = gAssets.texParede044;
+    g.r.texParede047 = gAssets.texParede047;
     
     g.r.texMenuBG = gAssets.texMenuBG;
     g.r.texTelaWin = gAssets.texTelaWin;
@@ -175,7 +180,7 @@ void gameUpdate(float dt)
 
     updateEntities(dt);
 
-    if (componentesQueimados >= 2) {
+    if (componentesQueimados >= 10) {
         if (faseAtual >= 3) {
             g.state = GameState::JOGO_ZERADO;
         } else {

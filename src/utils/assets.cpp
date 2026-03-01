@@ -28,17 +28,19 @@ bool loadAssets(GameAssets &a)
     // --- BOSS 3 ('M') - Marco Leal ---
     a.texEnemiesRage[2] = carregaTextura("assets/enemies/enemyRage3.png");
 
-    // --- INIMIGO EXTRA ('K') ---
-    
+    a.texParede040 = carregaTextura("assets/040.png");
+    a.texParede043 = carregaTextura("assets/043.png");
+    a.texParede044 = carregaTextura("assets/044.png");
+    a.texParede047 = carregaTextura("assets/047.png");    
+
+    a.texDamage = carregaTextura("assets/damage.png");
     // --- COLETÁVEL: HD ('H') ---
     a.texEnemies[4] = carregaTextura("assets/hd.png");
 
-    // --- OVERLAYS DE TELA (Efeitos) ---
-    a.texDamage = carregaTextura("assets/damage.png");
 
     // --- VERIFICAÇÃO DE ERROS ---
     // (Removidos os checks de armas e itens de chão que não usamos mais)
-    if ( !a.texParede ||  !a.texLava || !a.texDamage || !a.texMenuBG  ||
+    if ( !a.texLava || !a.texDamage || !a.texMenuBG  || !a.texParede040 || !a.texParede043 || !a.texParede044 || !a.texParede047 ||
         !a.texEnemiesRage[0] ||
         !a.texEnemiesRage[1] ||
         !a.texEnemiesRage[2])

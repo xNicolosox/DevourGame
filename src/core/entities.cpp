@@ -43,7 +43,7 @@ bool isWalkable(float nx, float nz)
     char c = data[tz][tx];
 
     // Se for parede (1 ou 2), o bicho trava
-    if (c == '1' || c == '2') return false;
+    if (c == '1' || c == '2' || c == 'U' || c == 'I' || c == 'O' || c == 'Y') return false;
 
     return true;
 }
@@ -71,10 +71,10 @@ void updateEntities(float dt)
         // ==========================================
         if (en.type == 4) 
         {
-            // Se o player chegar perto do HD (1.2 metros)
-            if (dist < 1.2f) {
-                en.state = STATE_DEAD;       // O HD "morre" (some do mapa)
-                componentesCarregados++;     // Vai pra sua mochila
+            // SÓ PODE PEGAR SE ESTIVER PERTO E DE MÃOS VAZIAS (componentesCarregados == 0)
+            if (dist < 1.2f && componentesCarregados == 0) {
+                en.state = STATE_DEAD;       // O HD some do chão
+                componentesCarregados++;     // Vai pra sua mão
 
                 audioPlayHDCollected(gameAudio());
             }

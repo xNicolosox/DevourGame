@@ -17,6 +17,10 @@ struct GameAssets
     GLuint texParedeInterna = 0;
     GLuint texTeto = 0;
     GLuint texSkydome = 0;
+    GLuint texParede040 = 0;
+    GLuint texParede043 = 0;
+    GLuint texParede044 = 0;
+    GLuint texParede047 = 0;
 
     // --- Efeitos de Tela (HUD Terror) ---
     GLuint texHealthOverlay = 0; // Flash de cura/transição

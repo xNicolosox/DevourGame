@@ -412,7 +412,7 @@ void drawLevel(const MapLoader &map, float px, float pz, float dx, float dz, con
 
             bool isEntity = (c == 'J' || c == 'T' || c == 'M' || c == 'K' ||
                              c == 'G' || c == 'H' || c == 'A' || c == 'E' ||
-                             c == 'F' || c == 'I');
+                             c == 'F' );
 
             if (isEntity)
             {
@@ -462,7 +462,51 @@ void drawLevel(const MapLoader &map, float px, float pz, float dx, float dz, con
                 drawFace(wx, wz, 1, vizTras, r.texParedeInterna, time);
                 drawFace(wx, wz, 2, vizDireita, r.texParedeInterna, time);
                 drawFace(wx, wz, 3, vizEsq, r.texParedeInterna, time);
+            }else if (c == 'U') {
+                char vizFrente = getTileAt(map, x, z + 1);
+                char vizTras = getTileAt(map, x, z - 1);
+                char vizDireita = getTileAt(map, x + 1, z);
+                char vizEsq = getTileAt(map, x - 1, z);
+
+                drawFace(wx, wz, 0, vizFrente, r.texParede040, time);
+                drawFace(wx, wz, 1, vizTras, r.texParede040, time);
+                drawFace(wx, wz, 2, vizDireita, r.texParede040, time);
+                drawFace(wx, wz, 3, vizEsq, r.texParede040, time);
             }
+            else if (c == 'I') {
+                 char vizFrente = getTileAt(map, x, z + 1);
+                char vizTras = getTileAt(map, x, z - 1);
+                char vizDireita = getTileAt(map, x + 1, z);
+                char vizEsq = getTileAt(map, x - 1, z);
+
+                drawFace(wx, wz, 0, vizFrente, r.texParede043, time);
+                drawFace(wx, wz, 1, vizTras, r.texParede043, time);
+                drawFace(wx, wz, 2, vizDireita, r.texParede043, time);
+                drawFace(wx, wz, 3, vizEsq, r.texParede043, time);
+            }
+            else if (c == 'O') {
+                 char vizFrente = getTileAt(map, x, z + 1);
+                char vizTras = getTileAt(map, x, z - 1);
+                char vizDireita = getTileAt(map, x + 1, z);
+                char vizEsq = getTileAt(map, x - 1, z);
+
+                drawFace(wx, wz, 0, vizFrente, r.texParede044, time);
+                drawFace(wx, wz, 1, vizTras, r.texParede044, time);
+                drawFace(wx, wz, 2, vizDireita, r.texParede044, time);
+                drawFace(wx, wz, 3, vizEsq, r.texParede044, time);
+            }
+            else if (c == 'Y') {
+                 char vizFrente = getTileAt(map, x, z + 1);
+                char vizTras = getTileAt(map, x, z - 1);
+                char vizDireita = getTileAt(map, x + 1, z);
+                char vizEsq = getTileAt(map, x - 1, z);
+
+                drawFace(wx, wz, 0, vizFrente, r.texParede047, time);
+                drawFace(wx, wz, 1, vizTras, r.texParede047, time);
+                drawFace(wx, wz, 2, vizDireita, r.texParede047, time);
+                drawFace(wx, wz, 3, vizEsq, r.texParede047, time);
+            }
+                    
             else if (c == 'L')
             {
                 desenhaTileLava(wx, wz, r, time);

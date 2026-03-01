@@ -6,15 +6,7 @@
 
 struct HudTextures
 {
-    GLuint texHudFundo = 0;
-    GLuint texGunHUD = 0;
-
-    GLuint texGunDefault = 0;
-    GLuint texGunFire1 = 0;
-    GLuint texGunFire2 = 0;
-    GLuint texGunReload1 = 0;
-    GLuint texGunReload2 = 0;
-
+ 
     GLuint texDamage = 0;
     GLuint texHealthOverlay = 0;
     GLuint texHD = 0;
