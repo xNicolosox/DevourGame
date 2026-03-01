@@ -175,7 +175,7 @@ void gameUpdate(float dt)
 
     updateEntities(dt);
 
-    if (componentesQueimados >= 1) {
+    if (componentesQueimados >= 2) {
         if (faseAtual >= 3) {
             g.state = GameState::JOGO_ZERADO;
         } else {

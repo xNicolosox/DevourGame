@@ -166,8 +166,7 @@ void audioInit(AudioSystem& a, const Level& level) {
 
     // Loads (com fallback mono/estéreo)
     a.bufAmbient = a.engine.loadWav("assets/audio/music.wav");
-    if (!a.bufAmbient) a.bufAmbient = a.engine.loadWav("assets/audio/music.wav");
-
+    
     a.bufShot = a.engine.loadWav("assets/audio/shot_mono.wav");
     if (!a.bufShot) a.bufShot = a.engine.loadWav("assets/audio/shot.wav");
 
@@ -181,9 +180,7 @@ void audioInit(AudioSystem& a, const Level& level) {
     if (!a.bufReload) a.bufReload = a.engine.loadWav("assets/audio/reload.wav");
 
     a.bufClickReload = a.engine.loadWav("assets/audio/click_reload_mono.wav");
-
     a.bufKill = a.engine.loadWav("assets/audio/kill_mono.wav");
-
     a.bufEnemyScream = a.engine.loadWav("assets/audio/enemy_scream_mono.wav");
 
     a.bufHurt = a.engine.loadWav("assets/audio/hurt_mono.wav");
@@ -196,6 +193,29 @@ void audioInit(AudioSystem& a, const Level& level) {
 
     a.bufGrunt = a.engine.loadWav("assets/audio/grunt_mono.wav");
     if (!a.bufGrunt) a.bufGrunt = a.engine.loadWav("assets/audio/grunt.wav");
+
+    // ==========================================
+    // CARREGAMENTO DOS NOVOS SONS DO DEVOUR
+    // ==========================================
+    a.bufHDCollected = a.engine.loadWav("assets/audio/hd_collected.wav");
+    // Fallback caso você tenha digitado sem o 'c' no arquivo:
+    if (!a.bufHDCollected) a.bufHDCollected = a.engine.loadWav("assets/audio/hd_colleted.wav"); 
+
+    a.bufBossRage = a.engine.loadWav("assets/audio/enemy_scream_mono.wav");
+
+    // Configurando as Sources dos novos sons
+    if (a.bufHDCollected) {
+        a.srcHDCollected = a.engine.createSource(a.bufHDCollected, false);
+        alSourcei(a.srcHDCollected, AL_SOURCE_RELATIVE, AL_TRUE); // Toca "dentro da cabeça" do player
+        a.engine.setSourceGain(a.srcHDCollected, AudioTuning::MASTER * 1.0f);
+    }
+
+    if (a.bufBossRage) {
+        a.srcBossRage = a.engine.createSource(a.bufBossRage, false);
+        alSourcei(a.srcBossRage, AL_SOURCE_RELATIVE, AL_TRUE); // Toca "globalmente" pra dar medo
+        a.engine.setSourceGain(a.srcBossRage, AudioTuning::MASTER * 1.5f); // Som alto!
+    }
+    // ==========================================
 
     // Ambient (2D loop)
     if (a.bufAmbient) {
@@ -331,7 +351,9 @@ void audioUpdate(
         if (!s) continue;
 
         const auto& en = level.enemies[i];
-        if (en.state == STATE_DEAD) {
+        
+        // IGNORA HDs E INIMIGOS MORTOS: O HD não respira, não bate coração, nada.
+        if (en.state == STATE_DEAD || en.type == 4) {
             a.engine.stop(s);
             continue;
         }
@@ -359,6 +381,13 @@ void audioUpdate(
     // kill detect
     for (size_t i = 0; i < level.enemies.size(); ++i) {
         const auto& en = level.enemies[i];
+        
+        // Pula o HD pra ele não fazer som de zumbi morrendo quando você pega
+        if (en.type == 4) {
+            a.enemyPrevState[i] = (int)en.state;
+            continue;
+        }
+
         if (a.enemyPrevState[i] != STATE_DEAD && en.state == STATE_DEAD) {
             audioPlayKillAt(a, en.x, en.z);
         }
@@ -369,7 +398,9 @@ void audioUpdate(
     if (a.bufEnemyScream && !a.srcEnemyScreams.empty()) {
         for (size_t i = 0; i < level.enemies.size() && i < a.srcEnemyScreams.size(); ++i) {
             const auto& en = level.enemies[i];
-            if (en.state == STATE_DEAD) continue;
+            
+            // PULA O HD! Ele não pode gritar do nada!
+            if (en.state == STATE_DEAD || en.type == 4) continue;
 
             // distância para audibilidade
             float dxs = en.x - listener.pos.x;
@@ -491,4 +522,19 @@ void audioOnPlayerShot(AudioSystem& a) {
             a.engine.play(a.srcGrunt);
         }
     }
+}
+
+// ==========================================
+// FUNÇÕES DE ÁUDIO DO DEVOUR
+// ==========================================
+void audioPlayHDCollected(AudioSystem& a) {
+    if (!a.ok || a.srcHDCollected == 0) return;
+    a.engine.stop(a.srcHDCollected);
+    a.engine.play(a.srcHDCollected);
+}
+
+void audioPlayBossRage(AudioSystem& a) {
+    if (!a.ok || a.srcBossRage == 0) return;
+    a.engine.stop(a.srcBossRage);
+    a.engine.play(a.srcBossRage);
 }

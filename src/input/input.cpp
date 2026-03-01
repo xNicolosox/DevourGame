@@ -12,6 +12,7 @@
 #include "core/camera.h" // Necessário para saber a posição do jogador
 #include "level/level.h" // Necessário para ler o mapa
 #include "core/config.h"
+#include "audio/audio_system.h"
 
 // --- VARIÁVEIS EXTERNAS DO DEVOUR ---
 extern int componentesCarregados;
@@ -110,6 +111,7 @@ void keyboard(unsigned char key, int, int)
                 if (pertoDoIncinerador) {
                     componentesCarregados = 0;
                     componentesQueimados++;
+                    audioPlayBossRage(gameAudio());
                     printf("\n>>> SUCESSO! Peça destruida! Total: %d/10\n", componentesQueimados);
                 } else {
                     printf("\n>>> ERRO: Voce nao esta no Incinerador (Bloco 9)!\n");

@@ -1,108 +1,173 @@
 #include "core/entities.h"
 #include "core/game.h"
 #include "core/camera.h"
-#include "audio/audio_system.h"
+#include "level/level.h"
 #include <cmath>
 #include <cstdlib> 
-#include <cstdio>  
+#include "audio/audio_system.h"
 
-// --- VARIÁVEIS EXTERNAS DO DEVOUR ---
-extern int componentesCarregados;
 extern int componentesQueimados;
+extern int componentesCarregados;
 
-// MANTIDO: Função de colisão original do seu motor
-bool isWalkable(float x, float z)
+const float WANDER_SPEED_MULT = 0.4f; 
+const float VISION_DISTANCE = 15.0f;  
+const float VISION_ANGLE_COS = 0.5f;  
+
+// ==========================================
+// FUNÇÃO DE COLISÃO DO MONSTRO (Sincronizada com o Player)
+// ==========================================
+bool isWalkable(float nx, float nz)
 {
-    auto& lvl = gameLevel();
-    float tile = lvl.metrics.tile;
-    float offX = lvl.metrics.offsetX;
-    float offZ = lvl.metrics.offsetZ;
+    auto& lvl = gameLevel(); 
+    if (lvl.map.getHeight() == 0) return true;
 
-    int tx = (int)((x - offX) / tile);
-    int tz = (int)((z - offZ) / tile);
+    // Puxa as métricas reais do mapa (Tamanho do Tile e os Offsets)
+    const LevelMetrics &m = lvl.metrics;
+    float tile = m.tile;
+
+    // A MÁGICA ESTÁ AQUI: Subtraímos o offset igualzinho o Player faz!
+    float localX = nx - m.offsetX;
+    float localZ = nz - m.offsetZ;
+
+    // Converte para a matriz com precisão absoluta
+    int tx = (int)std::floor(localX / tile);
+    int tz = (int)std::floor(localZ / tile);
 
     const auto& data = lvl.map.data();
+    int mapH = (int)data.size();
 
-    if (tz < 0 || tz >= (int)data.size()) return false;
+    // Proteção contra falhas fora do mapa
+    if (tz < 0 || tz >= mapH) return false;
     if (tx < 0 || tx >= (int)data[tz].size()) return false;
 
     char c = data[tz][tx];
-    if (c == '1' || c == '2') return false; 
+
+    // Se for parede (1 ou 2), o bicho trava
+    if (c == '1' || c == '2') return false;
 
     return true;
 }
 
+// ==========================================
+// MÁQUINA DE ESTADOS DA IA
+// ==========================================
 void updateEntities(float dt)
 {
     auto& g = gameContext();
     auto& lvl = gameLevel();
-    auto& audio = gameAudio();
 
-    // Apenas passamos pelas entidades (Bosses e HDs)
     for (auto& en : lvl.enemies)
     {
-        if (en.state == STATE_DEAD) continue;
+        // Agora pulamos APENAS o que já está morto/coletado
+        if (en.state == STATE_DEAD) continue; 
 
-        if (en.hurtTimer > 0.0f) en.hurtTimer -= dt;
-
+        // Calcula a distância do jogador até a entidade (seja monstro ou HD)
         float dx = camX - en.x;
         float dz = camZ - en.z;
         float dist = std::sqrt(dx * dx + dz * dz);
-        
-        // =============================================================
-        // 1. BOSSES (Tipo 0 = Júlio, Tipo 1 = Thiago, Tipo 2 = Marco)
-        // =============================================================
-        if (en.type == 0 || en.type == 1 || en.type == 2) 
+
+        // ==========================================
+        // LÓGICA DE COLETA DOS HDs (TIPO 4)
+        // ==========================================
+        if (en.type == 4) 
         {
-            // --- CÁLCULO DE DIFICULDADE ---
-            // A velocidade aumenta conforme os HDs são queimados
-            float baseSpeed = ENEMY_SPEED * 0.7f;
-            float speedBoost = 1.0f + (componentesQueimados * 0.20f); 
-            float moveStep = baseSpeed * speedBoost * dt;
+            // Se o player chegar perto do HD (1.2 metros)
+            if (dist < 1.2f) {
+                en.state = STATE_DEAD;       // O HD "morre" (some do mapa)
+                componentesCarregados++;     // Vai pra sua mochila
 
-            // Limite de velocidade (Cap) para não quebrar o jogo
-            float maxSpeedLimit = ENEMY_SPEED * 3.0f;
-            if (moveStep > maxSpeedLimit * dt) moveStep = maxSpeedLimit * dt;
-
-            if (dist > 0.8f) 
-            {
-                en.state = STATE_CHASE;
-                float dirX = dx / dist;
-                float dirZ = dz / dist;
-
-                // Move em X
-                float nextX = en.x + dirX * moveStep;
-                if (isWalkable(nextX, en.z)) en.x = nextX;
-
-                // Move em Z
-                float nextZ = en.z + dirZ * moveStep;
-                if (isWalkable(en.x, nextZ)) en.z = nextZ;
+                audioPlayHDCollected(gameAudio());
             }
-            else 
-            {
-                // Ataque dos Bosses
-                en.state = STATE_ATTACK;
-                en.attackCooldown -= dt;
-                
-                if (en.attackCooldown <= 0.0f)
-                {
-                    g.player.health -= 35; // Dano massivo!
-                    en.attackCooldown = 0.8f; 
-                    g.player.damageAlpha = 1.0f; 
-                    audioPlayHurt(audio);
-                }
+            // Como é um HD, ele não precisa patrulhar, então pulamos o resto do código
+            continue; 
+        }
+
+        // ==========================================
+        // MÁQUINA DE ESTADOS DA IA (Monstros e Bosses)
+        // ==========================================
+        float dirToPlayerX = 0.0f;
+        float dirToPlayerZ = 0.0f;
+        if (dist > 0.001f) {
+            dirToPlayerX = dx / dist;
+            dirToPlayerZ = dz / dist;
+        }
+
+        bool playerVisible = false;
+        
+        if (dist < VISION_DISTANCE) {
+            float dotProduct = (en.dirX * dirToPlayerX) + (en.dirZ * dirToPlayerZ);
+            // Ele sempre te vê se estiver perto, ou se estiver na frente dele
+            if (dotProduct > VISION_ANGLE_COS || dist < 3.0f) {
+                playerVisible = true;
             }
         }
-        // =============================================================
-        // 2. COLETÁVEL (Tipo 4 = HD)
-        // =============================================================
-        else if (en.type == 4)
+
+        switch (en.state)
         {
-            if (dist < 1.2f && componentesCarregados == 0)
+            case STATE_IDLE:
             {
-                en.state = STATE_DEAD; // O HD some do mapa
-                componentesCarregados = 1;
-                printf("\n>>> HD RECOLHIDO! Corra para o Altar (Bloco 9)!\n");
+                float angle = (float)(rand() % 360) * 3.14159f / 180.0f;
+                en.dirX = cosf(angle);
+                en.dirZ = sinf(angle);
+                en.animTimer = 3.0f + (float)(rand() % 300) / 100.0f;
+                en.state = STATE_CHASE; 
+                break;
+            }
+
+            case STATE_CHASE:
+            {
+                if (playerVisible) {
+                    en.dirX = dirToPlayerX;
+                    en.dirZ = dirToPlayerZ;
+
+                    float speed = ENEMY_SPEED * (1.0f + (componentesQueimados * 0.20f));
+                    float step = speed * dt;
+
+                    if (isWalkable(en.x + en.dirX * step, en.z)) en.x += en.dirX * step;
+                    if (isWalkable(en.x, en.z + en.dirZ * step)) en.z += en.dirZ * step;
+
+                    if (dist < 1.2f) {
+                        en.state = STATE_ATTACK;
+                        en.attackCooldown = 0.8f; 
+                    }
+                } 
+                else {
+                    float step = ENEMY_SPEED * WANDER_SPEED_MULT * dt;
+                    float lookAhead = 1.5f; 
+
+                    if (isWalkable(en.x + (en.dirX * lookAhead), en.z)) {
+                        en.x += en.dirX * step;
+                    } else {
+                        en.dirX *= -1.0f; 
+                    }
+
+                    if (isWalkable(en.x, en.z + (en.dirZ * lookAhead))) {
+                        en.z += en.dirZ * step;
+                    } else {
+                        en.dirZ *= -1.0f; 
+                    }
+
+                    en.animTimer -= dt;
+
+                    if (en.animTimer <= 0.0f) {
+                        en.state = STATE_IDLE; 
+                    }
+                }
+                break;
+            }
+
+            case STATE_ATTACK:
+            {
+                en.attackCooldown -= dt;
+                
+                if (dist > 1.5f) en.state = STATE_CHASE;
+                
+                if (en.attackCooldown <= 0.0f && dist <= 1.5f) {
+                    g.player.health -= 35;
+                    en.attackCooldown = 1.0f; 
+                    g.player.damageAlpha = 1.0f; 
+                }
+                break;
             }
         }
     }

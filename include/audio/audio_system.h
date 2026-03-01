@@ -16,7 +16,7 @@ struct AudioListener {
     Vec3 up;
 };
 
-// Estado do sistema de áudio (tudo que era global no game.cpp)
+// Estado do sistema de áudio
 struct AudioSystem {
     AudioEngine engine;
     bool ok = false;
@@ -37,6 +37,10 @@ struct AudioSystem {
     ALuint bufEnemy = 0;
     ALuint bufEnemyScream = 0;
 
+    // NOVOS BUFFERS: HD e Grito de Raiva
+    ALuint bufHDCollected = 0;
+    ALuint bufBossRage = 0;
+
     // Sources
     ALuint srcAmbient = 0;
     ALuint srcShot = 0;
@@ -54,6 +58,10 @@ struct AudioSystem {
     ALuint srcGrunt = 0;
     int shotsSinceGrunt = 0;
 
+    // NOVAS SOURCES: HD e Grito de Raiva
+    ALuint srcHDCollected = 0;
+    ALuint srcBossRage = 0;
+
     bool stepPlaying = false;
 
     // Inimigos
@@ -65,11 +73,9 @@ struct AudioSystem {
 
 // -------- API do módulo --------
 
-// Inicializa OpenAL, carrega buffers, cria sources "globais" e prepara vetores por inimigo.
-// Chame depois do level já estar carregado (para saber quantos inimigos existem).
 void audioInit(AudioSystem& a, const Level& level);
 
-// Atualiza listener, passos, loops de inimigos, lava, respiração, screams e kill-detect.
+// CORRIGIDO: Sem o 'if' perdido aqui no meio!
 void audioUpdate(
     AudioSystem& a,
     const Level& level,
@@ -86,5 +92,8 @@ void audioPlayPumpClick(AudioSystem& a);
 void audioPlayHurt(AudioSystem& a);
 void audioPlayKillAt(AudioSystem& a, float x, float z);
 
-// Utilitário (se você quiser tocar "grunhido" a cada N tiros)
+// NOVAS FUNÇÕES PARA O DEVOUR
+void audioPlayHDCollected(AudioSystem& a);
+void audioPlayBossRage(AudioSystem& a);
+
 void audioOnPlayerShot(AudioSystem& a);
