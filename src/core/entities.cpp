@@ -120,7 +120,7 @@ void updateEntities(float dt)
                     en.dirX = dirToPlayerX;
                     en.dirZ = dirToPlayerZ;
 
-                    float speed = ENEMY_SPEED * (1.0f + (componentesQueimados * 0.20f));
+                    float speed = ENEMY_SPEED * (1.0f + (componentesQueimados * 0.40f));
                     float step = speed * dt;
 
                     if (isWalkable(en.x + en.dirX * step, en.z)) en.x += en.dirX * step;
