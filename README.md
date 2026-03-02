@@ -3,6 +3,15 @@
 
 Este projeto é um jogo de **Survival Horror em Primeira Pessoa**, construído do zero utilizando uma engine customizada em **C++ e OpenGL (pipeline fixo + GLSL 1.20)**. O gerenciamento de janela e entrada é feito via **GLUT**, funções modernas (shaders, VBOs) via **GLEW**, e o sistema de áudio 3D imersivo utiliza **OpenAL**.
 
+## 🎯 Objetivo do Jogo
+O jogador assume o papel de um estudante desesperado preso no data center e nos laboratórios da UNIFAP. Os professores de Computação enlouqueceram com os códigos mal otimizados e agora estão caçando você pelos corredores! O seu único caminho para a sobrevivência (e para salvar o seu TCC) se baseia na seguinte mecânica:
+
+1. Localizar **10 HDs** com dados corrompidos espalhados proceduralmente pelo mapa.  
+2. Transportar **um HD de cada vez** até o **Incinerador** para apagar as evidências.  
+3. Destruí-los completamente antes que a banca te alcance.  
+
+⚠️ *Mecânica de Dificuldade Dinâmica: A cada HD destruído, a velocidade de perseguição do Boss aumenta em 20%. O contato físico com o inimigo resulta em Hit Kill (Morte Instantânea).*
+
 ---
 
 # 🛠️ Setup Completo do Ambiente (Windows + MSYS2)
