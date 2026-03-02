@@ -49,9 +49,10 @@ void keyboard(unsigned char key, int, int)
     }
 
     // --- PAUSE ---
+// --- PAUSE ---
     if (state == GameState::PAUSADO)
     {
-        if (key == 'p' || key == 'P')
+        if (key == 9) // 
         {
             gameSetState(GameState::JOGANDO);
         }
@@ -61,10 +62,10 @@ void keyboard(unsigned char key, int, int)
     // --- JOGANDO ---
     if (state == GameState::JOGANDO)
     {
-        if (key == 'p' || key == 'P')
+        if (key == 9) // <-- Mudou aqui também!
         {
             gameSetState(GameState::PAUSADO);
-            keyW = keyA = keyS = keyD = false;
+            keyW = keyA = keyS = keyD = false; // Zera as teclas de andar
             return;
         }
 

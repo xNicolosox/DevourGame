@@ -439,7 +439,7 @@ void pauseMenuRender(int screenW, int screenH, float tempo)
     uiDrawStrokeText(x, y, t, scale);
 
     // 4) subtítulo
-    const char *sub = "Pressione P para Voltar";
+    const char *sub = "Pressione Tab para Voltar";
     float scaleSub = 0.22f;
     float wSub = uiStrokeTextWidthScaled(sub, scaleSub);
     float xSub = (screenW - wSub) / 2.0f;

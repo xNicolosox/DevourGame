@@ -33,8 +33,6 @@ int main(int argc, char** argv)
     if (!gameInit("maps/map1.txt")) return 1;
 
 
-
-    // Esconde o mouse para aumentar a imersão
     glutSetCursor(GLUT_CURSOR_NONE);
 
     glutMainLoop();

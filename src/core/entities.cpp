@@ -128,7 +128,7 @@ void updateEntities(float dt)
 
                     if (dist < 1.2f) {
                         en.state = STATE_ATTACK;
-                        en.attackCooldown = 0.8f; 
+                        en.attackCooldown = 0.1f; 
                     }
                 } 
                 else {
@@ -163,9 +163,11 @@ void updateEntities(float dt)
                 if (dist > 1.5f) en.state = STATE_CHASE;
                 
                 if (en.attackCooldown <= 0.0f && dist <= 1.5f) {
-                    g.player.health -= 35;
+                 
+                    g.player.health = 0; 
+                    
                     en.attackCooldown = 1.0f; 
-                    g.player.damageAlpha = 1.0f; 
+                    g.player.damageAlpha = 1.0f; // Pisca a tela de vermelho pro Game Over
                 }
                 break;
             }
